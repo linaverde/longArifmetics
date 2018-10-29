@@ -1,7 +1,7 @@
 ﻿program lingArifmetics;
 
 const
-  max = 200;
+  max = 20;
   min = 3;
 
 type
@@ -28,7 +28,6 @@ begin
       checkEight := 'Встречен недопустимый для восьмеричной системы символ';
 end;
 
-
 procedure readLongDec(var input: text; var a: longDecimal; var err: string);
 var
   i: integer;
@@ -36,41 +35,27 @@ var
 begin
   err := '';
   readln(input, s);
-  if s.Length < min then 
-    err := 'Введенное число содержит на ' + (min - s.Length) + ' меньше знаков, чем допустимо';
-  if s.Length > max then 
-    err := 'Введенное число содержит на ' + (s.Length - max) + ' больше знаков, чем допустимо';
+  if s.Length > max*3 then 
+    err := 'Введенное число содержит на ' + (s.Length - max*3) + ' больше знаков, чем допустимо';
   if err = '' then err := checkEight(s);
   if err = '' then
   begin
     i := 0;
-    while s[1] = '0' do
+    while (s[1] = '0') and (s.Length > 1)  do
       delete(s, 1, 1);
-    if (s.Length mod 3) <> 0 then
-      if (s.Length mod 3) = 2 then
-      begin
-        i := i + 1;
-        a[i] := StrToInt(Copy(s, 1, 2));
-        a[0] := i;
-        Delete(s, 1, 2);
-      end
-      else
-      begin
-        i := i + 1;
-        a[i] := StrToInt(Copy(s, 1, 1));
-        a[0] := i;
-        Delete(s, 1, 1);
-      end;
-    while s.Length > 0 do
+    while s.Length > 3 do
     begin
       i := i + 1;
-      a[i] := StrToInt(Copy(s, 1, 3));
+      a[i] := StrToInt(Copy(s, s.Length - 2, 3));
       a[0] := i;
-      Delete(s, 1, 3);
-    end
+      Delete(s, s.Length - 2, 3);
+    end;
+    i := i + 1;
+    a[i] := StrToInt(Copy(s, 1, 3));
+    a[0] := i;
+    Delete(s, 1, 3);
   end;
 end;
-
 
 procedure readLongReal(var input: text; var b: longReal; var err: string);
   
@@ -79,37 +64,34 @@ procedure readLongReal(var input: text; var b: longReal; var err: string);
   var
     i: integer;
   begin
-    if s.Length < min then 
-      err := 'Введенное число содержит на ' + (min - s.Length) + ' меньше знаков, чем допустимо';
     if s.Length > max then 
-      err := 'Введенное число содержит на ' + (s.Length - max) + ' больше знаков, чем допустимо';
+      err := 'Введенное число содержит на ' + (s.Length - max*3) + ' больше знаков, чем допустимо';
     if err = '' then err := checkEight(s);
     if err = '' then
     begin
       i := 0;
       if t = 1 then
-        if (s.Length mod 3) <> 0 then
-          if (s.Length mod 3) = 2 then
-          begin
-            i := i + 1;
-            a[i] := StrToInt(Copy(s, 1, 2));
-            a[0] := i;
-            Delete(s, 1, 2);
-          end
-          else
-          begin
-            i := i + 1;
-            a[i] := StrToInt(Copy(s, 1, 1));
-            a[0] := i;
-            Delete(s, 1, 1);
-          end;
-      while s.Length > 0 do
       begin
+        while s.Length > 3 do
+        begin
+          i := i + 1;
+          a[i] := StrToInt(Copy(s, s.Length - 2, 3));
+          a[0] := i;
+          Delete(s, s.Length - 2, 3);
+        end;
         i := i + 1;
         a[i] := StrToInt(Copy(s, 1, 3));
         a[0] := i;
         Delete(s, 1, 3);
       end
+      else
+        while s.Length > 0 do
+        begin
+          i := i + 1;
+          a[i] := StrToInt(Copy(s, 1, 3));
+          a[0] := i;
+          Delete(s, 1, 3);
+        end
     end;
   end;
 
@@ -125,13 +107,13 @@ begin
       dot := i
     else if (dot <> 0) and (s[i] = ',') then
       err := 'В записи вещественного числа не может быть двух запятых';
-  if (dot = 0) then
+  if (dot = 0) or (dot = 1) or (dot = s.Length) then
     err := 'Не является вещественным числом';
   if err = '' then
   begin
     sNat := Copy(s, 1, dot - 1);
     Delete(s, 1, dot);
-    while sNat[1] = '0' do
+    while (sNat[1] = '0') and (sNat.Length > 1) do
       delete(sNat, 1, 1);
     convertString(sNat, b.nat, 1);
     if err <> '' then
@@ -139,8 +121,8 @@ begin
   end;
   if err = '' then
   begin
-    while s[Length(s)] = '0' do
-      Delete(s, Length(s), 1);
+    while (s[s.Length] = '0') and (s.Length > 1) do
+      Delete(s, s.Length, 1);
     convertString(s, b.frac, 2);
     if err <> '' then
       err := 'Ошибка в дробной части числа: ' + err
@@ -151,39 +133,153 @@ procedure printLong(const a: dec);
 var
   i: integer;
 begin
-  for i := 1 to a[0] do
-    write(a[i]);
+  for i := a[0] downto 1 do
+    if i <> a[0] then
+      if a[i] < 10 then
+        write(0, 0, a[i])
+      else 
+      if a[i] < 100 then
+        write(0, a[i])
+      else
+        write(a[i])
+    else 
+      write(a[i]);
   writeln();
+  
 end;
 
 procedure printLongReal(const a: longReal);
 var
   i: integer;
 begin
-  for i := 1 to a.nat[0] do
-    write(a.nat[i]);
+  for i := a.nat[0] downto 1 do
+    if i <> a.nat[0] then
+      if a.nat[i] < 10 then
+        write(0, 0, a.nat[i])
+      else 
+      if a.nat[i] < 100 then
+        write(0, a.nat[i])
+      else
+        write(a.nat[i])
+    else
+      write(a.nat[i]);
   write(',');
-  for i := 1 to a.frac[0] do
-    write(a.frac[i]);
+  for i := 1 to a.frac[0] - 1 do
+    if a.frac[i] < 10 then
+      write(0, 0, a.frac[i])
+    else 
+    if a.frac[i] < 100 then
+      write(0, a.frac[i])
+    else
+      write(a.frac[i]);
+  write(a.frac[i + 1]);
   writeln();
 end;
 
-procedure invertArr(var arr: dec);
+function addLong(a: longDecimal; b: longReal): longDecimal;
+
 var
-  i, k: integer;
-  temp: word;
+  i, j, m: integer;
+  c: longDecimal;
+  next, temp: word;
+
 begin
-  k := arr[0] div 2;
-  for i := 1 to k do
+  if a[0] < b.nat[0] then 
+    m := a[0]
+  else
+    m := b.nat[0];
+  if (b.frac[1] div 100) >= 5 then 
+    next := 1
+  else
+    next := 0;
+  for i := 1 to m do
   begin
-    temp := arr[i];
-    arr[i] := arr[arr[0] + 1 - i];
-    arr[arr[0] + 1 - i] := temp;
+    //складывание единиц
+    //temp := ((a[i] mod 10) + (b.nat[i] mod 10) + next) mod 8; 
+    temp := (a[i] mod 10) + (b.nat[i] mod 10) + next
+  if temp >= 8  then
+  begin
+    temp := temp - 8;
+    next := 1;
+  end
+  else 
+    next := 0;
+  c[i] := temp + c[i];
+    //складывание десятков
+  temp := (a[i] mod 100 div 10) + (b.nat[i] mod 100 div 10) + next;
+  if temp >= 8  then
+  begin
+    temp := temp - 8;
+    next := 1;
+  end
+  else 
+    next := 0;
+  c[i] := temp * 10 + c[i];
+    //складывание сотен
+  temp := (a[i] div 100) + (b.nat[i] div 100) + next;
+  if temp >= 8  then
+  begin
+    temp := temp - 8;
+    next := 1;
+  end
+  else 
+    next := 0;
+  c[i] := temp * 100 + c[i];
+  //c[i+1] := next;
+  c[0] := c[0] + 1;
   end;
+  //прибавление остатка
+  if a[0] > m then
+    for i := m + 1 to a[0] do
+    begin
+      c[i] := c[i] + a[i] + next;
+      next := 0;
+      if ((c[i] mod 10) >= 8) then
+      begin
+        c[i] := c[i] - 8;
+        c[i] := c[i] + 10;
+      end;
+      if ((c[i] div 10 mod 10) >= 8) then
+      begin
+        c[i] := c[i] - 80;
+        c[i] := c[i] + 100;
+      end; 
+      if ((c[i] div 100) >= 8) then
+      begin
+        c[i] := c[i] - 800;
+        next := 1;
+      end;
+      c[0] := c[0] + 1
+    end
+  else
+    for i := m + 1 to b.nat[0] do
+    begin
+      c[i] := c[i] + b.nat[i] + next;
+      next := 0;
+      if ((c[i] mod 10) >= 8) then
+      begin
+        c[i] := c[i] - 8;
+        c[i] := c[i] + 10;
+      end;
+      if ((c[i] div 10 mod 10) >= 8) then
+      begin
+        c[i] := c[i] - 80;
+        c[i] := c[i] + 100;
+      end; 
+      if ((c[i] div 100) >= 8) then
+      begin
+        c[i] := c[i] - 800;
+        next := 1;
+      end;
+      c[0] := c[0] + 1;
+    end;
+  if next = 1 then 
+  begin
+    c[0] := c[0] + 1;
+    c[c[0]] := next;
+  end;
+  result := c;
 end;
-
-
-
 
 var
   a, c: longDecimal;
@@ -196,11 +292,20 @@ begin
   reset(input);
   readLongDec(input, a, err);
   if err <> '' then 
-    Writeln(err);
+    Writeln(err)
+  else
+    Writeln('Считывание числа успешно');
   readLongReal(input, b, err);
   if err <> '' then 
-    Writeln(err);
+    Writeln(err)
+  else
+    Writeln('Считывание числа успешно');
   Close(input);
-  printLong(a);
-  printLongReal(b);
+  if err = '' then
+  begin
+    printLong(a);
+    printLongReal(b);
+    c := addLong(a, b);
+    printLong(c);
+  end;
 end.
