@@ -395,7 +395,7 @@ begin
     next := 0;
     for i := 1 to b.nat[0] do
     begin
-      temp := b.nat[i] mod 10 - a[i] mod 10 - next;
+      temp := (b.nat[i] mod 10) - (a[i] mod 10 + next);
       if temp < 0 then
       begin
         next := 1;
@@ -406,7 +406,7 @@ begin
         next := 0;
         d.nat[i] := temp;
       end;
-      temp := b.nat[i] div 10 mod 10 - a[i] div 10 mod 10 - next;
+      temp := (b.nat[i] div 10 mod 10) - (a[i] div 10 mod 10 + next);
       if temp < 0 then
       begin
         next := 1;
@@ -417,10 +417,10 @@ begin
         next := 0;
         d.nat[i] := d.nat[i] + temp * 10;
       end;
-      temp := b.nat[i] div 100 - a[i] div 100 - next;
+      temp := (b.nat[i] div 100) - (a[i] div 100 + next);
       if temp < 0 then
       begin
-        next := 0;
+        next := 1;
         d.nat[i] := d.nat[i] + (temp + 8) * 100;
       end
       else
