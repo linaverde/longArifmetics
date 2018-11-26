@@ -185,14 +185,25 @@ begin
       write(0, a.frac[i])
     else
       write(a.frac[i]);
-  i := i + 1;
-  if a.frac[i] mod 100 = 0 then
-    write(a.frac[i] div 100)
-  else
-  if a.frac[i] mod 10 = 0 then
-    write(a.frac[i] div 10)
-  else
-  write(a.frac[i]);
+  i := i + 1; //последнее число
+  if a.frac[i] < 10 then
+      write(0, 0, a.frac[i])
+    else 
+    if a.frac[i] < 100 then
+      if (a.frac[i] mod 10 = 0) then
+        write(0, a.frac[i] div 10)
+      else
+        write(0, a.frac[i])
+    else
+    begin
+      if (a.frac[i] mod 100 = 0) then
+        write(a.frac[i] div 100)
+      else
+      if(a.frac[i] mod 10 = 0) then
+        write(a.frac[i] div 10)
+      else
+        write(a.frac[i]);
+    end;
   writeln();
 end;
 
@@ -386,8 +397,12 @@ begin
         next := 0;
         d.nat[i] := d.nat[i] + temp * 100;
       end;
-      d.nat[0] := a[0];
     end;
+    temp := a[0];
+      for i := a[0] downto 1 do
+        if d.nat[i] = 0 then
+          temp := temp - 1;
+      d.nat[0] := temp;
   end
   else //b > a;
   begin
@@ -438,11 +453,10 @@ var
   a, c: longDecimal;
   b, d: longReal;
   err: string;
-  input, output: text;
 
 begin
   assign(input, 'input.txt');
-  reset(input);
+  assign(output, 'output.txt');
   readLongDec(input, a, err);
   if err <> '' then 
     Writeln(err)
@@ -453,7 +467,6 @@ begin
     Writeln(err)
   else
     Writeln('Считывание числа успешно');
-  Close(input);
   if err = '' then
   begin
     printLong(a);
